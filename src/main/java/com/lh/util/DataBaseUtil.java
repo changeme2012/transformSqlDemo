@@ -3,7 +3,9 @@ package com.lh.util;
 import com.alibaba.druid.pool.DruidDataSourceFactory;
 
 import javax.sql.DataSource;
-import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -15,7 +17,8 @@ public class DataBaseUtil {
     static {
         Properties properties = new Properties();
         try {
-            properties.load(DataBaseUtil.class.getClassLoader().getResourceAsStream("properties/jdbc.properties"));
+            Path path = Paths.get("properties/jdbc.properties");
+            properties.load(Files.newBufferedReader(path));
             dataSource = DruidDataSourceFactory.createDataSource(properties);
         } catch (Exception e) {
             e.printStackTrace();
