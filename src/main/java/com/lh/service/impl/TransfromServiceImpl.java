@@ -58,9 +58,14 @@ public class TransfromServiceImpl implements TransformService {
 
                 // 用表标记位判断当前表是否结束，结束就导出当前表的sql
                 if (tableNameFlag != null && !tableNameFlag.equals(tableName)) {
+
                     sqlList.forEach(sql -> sqlString.append(sql));
                     String newSql = generateSql(tableNameFlag, sqlString.substring(0, sqlString.lastIndexOf(",")));
+
                     resultSqls.add(newSql);
+                    //清空list信息，避免重复数据
+                    sqlList.clear();
+                    sqlString.setLength(0);
                     System.out.println(newSql);
                     System.out.println();
                 }
@@ -71,7 +76,7 @@ public class TransfromServiceImpl implements TransformService {
                 String columnName = resultSet.getString(COLUMN_NAME);
                 String columnComment = resultSet.getString(COLUMN_COMMENT);
 
-                String sql = "`" + columnName + "` " + newType + " comment '" + columnComment + "',\n";
+                String sql = "`" + columnName + "` " + newType + " COMMENT '" + columnComment + "',\n";
                 sqlList.add(sql);
                 tableNameFlag = tableName;
             }
@@ -137,12 +142,13 @@ public class TransfromServiceImpl implements TransformService {
 
         String sqlHeader = "DROP TABLE IF EXISTS " + prefixes + tableName + suffixes + ";\n" +
                 "CREATE EXTERNAL TABLE " + prefixes + tableName + suffixes + "(\n";
+        String sqlTableName=prefixes + tableName + suffixes;
 
         String sqlTail = "\n)" +
-                "PARTITIONED BY (dt= " + partitionword + "STRING)\n" +
+                "PARTITIONED BY ('"+ partitionword + "' STRING)\n" +
                 "ROW FORMAT DELIMITED FIELDS TERMINATED BY '" + delimited + "'\n" +
                 "NULL DEFINED AS '" + nullformat + "'\n" +
-                "LOCATION '" + location + "';";
+                "LOCATION '" + location + sqlTableName +  "/';";
         return sqlHeader + sql + sqlTail;
 
     }
